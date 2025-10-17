@@ -150,7 +150,7 @@
 
 **Status: COMPLETE**
 
-### Milestone 2: Phase 1 Complete (Weeks 1-6) ⬜
+### Milestone 2: Phase 1 Complete ⬜
 - [ ] Testing infrastructure set up
 - [ ] openy_carnation theme migrated
 - [ ] Activity Finder isolated
@@ -158,33 +158,33 @@
 
 **Status: NOT STARTED**
 
-### Milestone 3: Phase 2 Complete (Weeks 7-14) ⬜
+### Milestone 3: Phase 2 Complete ⬜
 - [ ] 16 WS Small Y modules migrated
 - [ ] 6 other WS modules migrated
 - [ ] Sprint 4-7 complete
 
 **Status: NOT STARTED**
 
-### Milestone 4: Phase 3 Complete (Weeks 15-26) ⬜
+### Milestone 4: Phase 3 Complete ⬜
 - [ ] 19 Layout Builder modules migrated
 - [ ] Sprint 8-13 complete
 
 **Status: NOT STARTED**
 
-### Milestone 5: Phase 4 Complete (Weeks 27-34) ⬜
+### Milestone 5: Phase 4 Complete ⬜
 - [ ] 10 content type modules migrated
 - [ ] Sprint 14-17 complete
 
 **Status: NOT STARTED**
 
-### Milestone 6: Phase 5 Complete (Weeks 35-42) ⬜
+### Milestone 6: Phase 5 Complete ⬜
 - [ ] 3 Activity Finder apps migrated
 - [ ] BootstrapVue removed
 - [ ] Sprint 18-21 complete
 
 **Status: NOT STARTED**
 
-### Milestone 7: Launch (Weeks 43-48) ⬜
+### Milestone 7: Launch ⬜
 - [ ] Comprehensive testing complete
 - [ ] Documentation updated
 - [ ] Staged rollout successful
@@ -215,13 +215,13 @@
 3. [ ] Create Sprint 2-3 documents
 4. [ ] Archive large documents (MIGRATION_STRATEGY.md, SPRINT_PLAN.md)
 
-**Sprint 1 (Weeks 1-2):**
+**Sprint 1:**
 1. [ ] Set up testing infrastructure (BackstopJS, Pa11y)
 2. [ ] Study lb_accordion reference implementation
 3. [ ] Make date picker decision
 4. [ ] Create module migration checklist template
 
-**Sprint 2-3 (Weeks 3-6):**
+**Sprint 2-3:**
 1. [ ] Migrate openy_carnation theme to Bootstrap 5.3.3
 2. [ ] Isolate Activity Finder with scoped Bootstrap 4 CSS
 3. [ ] Test theme + Activity Finder coexistence
