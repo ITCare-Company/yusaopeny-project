@@ -1,293 +1,278 @@
-# Bootstrap 5 Migration Documentation
+# Bootstrap 5 Migration Documentation - Navigation Hub
 
-This directory contains all documentation related to the Bootstrap 4 to Bootstrap 5 migration for the Y USA Open YMCA project.
-
-## Quick Links
-
-- **[Migration Strategy](MIGRATION_STRATEGY.md)** - Comprehensive migration plan (start here!)
-- **[Decision Questionnaire](decisions/QUESTIONNAIRE.md)** - 10 questions to guide sprint planning
-- **[Reference: lb_accordion](../modules/contrib/lb_accordion/)** - Already migrated to Bootstrap 5.3.3
-
-## Directory Structure
-
-```
-docs/bootstrap-5-migration/
-├── README.md (this file)
-├── MIGRATION_STRATEGY.md         # Comprehensive strategy document
-├── decisions/
-│   ├── QUESTIONNAIRE.md           # Decision questionnaire (COMPLETE THIS FIRST!)
-│   ├── ACTIVITY_FINDER_DECISION.md (coming soon)
-│   └── DATE_PICKER_DECISION.md    (coming soon)
-├── sprints/
-│   ├── SPRINT_1.md                (coming soon)
-│   ├── SPRINT_2.md                (coming soon)
-│   └── ...
-├── testing/
-│   ├── TESTING_MATRIX.xlsx        (coming soon)
-│   ├── backstop/                  (BackstopJS config)
-│   └── pa11y/                     (Pa11y config)
-└── reference/
-    ├── MODULE_INVENTORY.xlsx      (coming soon)
-    └── BREAKING_CHANGES_CHEAT_SHEET.md (coming soon)
-```
-
-## Getting Started
-
-### 1. Read the Strategy Document
-Start with [MIGRATION_STRATEGY.md](MIGRATION_STRATEGY.md) to understand:
-- Current state analysis (~70 modules using Bootstrap 4)
-- Common Bootstrap usage patterns
-- Key breaking changes (Bootstrap 4 → 5)
-- 8-phase migration plan
-- Risk assessment
-- Timeline & resources (6-9 months)
-
-### 2. Complete the Questionnaire
-Answer the [10 decision questions](decisions/QUESTIONNAIRE.md) to determine:
-- Timeline preference (3-4 months aggressive vs 6-9 months standard)
-- Activity Finder migration approach (critical decision!)
-- Available resources (developers, QA, budget)
-- Testing requirements
-- Rollout strategy
-
-### 3. Review Reference Implementation
-Study `lb_accordion` module (already migrated):
-```bash
-cd docroot/modules/contrib/lb_accordion
-# Review package.json, webpack.config.js, SCSS, templates
-```
-
-### 4. Set Up Testing
-```bash
-# Install testing tools
-npm install -D backstopjs pa11y-ci lighthouse
-
-# Configure visual regression testing
-cd docs/bootstrap-5-migration/testing
-backstop init
-```
-
-### 5. Create Migration Branch
-```bash
-git checkout -b feature/bootstrap-5-migration
-```
-
-## Migration Overview
-
-### Phase 1: Preparation (2-3 weeks)
-- Study lb_accordion reference
-- Set up testing infrastructure
-- Complete decision questionnaire
-- Create proof of concept
-
-### Phase 2: Core Theme (4-6 weeks)
-- Migrate openy_carnation theme
-- Update Bootstrap 4.4.1 → 5.3.3
-- Update all SCSS, templates, JavaScript
-- Extensive testing
-
-### Phase 3: Layout Builder Modules (6-8 weeks)
-- Migrate 19 lb_* modules (1 already done)
-- Follow lb_accordion pattern
-- High priority: lb_hero, lb_cards, lb_carousel, lb_modal, lb_webform
-
-### Phase 4: Activity Finder (8-12 weeks)
-- **Critical challenge:** BootstrapVue 2 not compatible with Bootstrap 5
-- Recommended: Temporary isolation + incremental migration
-- Replace BootstrapVue components with Bootstrap 5 vanilla JS
-
-### Phase 5: WS & Y Modules (6-8 weeks)
-- Migrate ws_small_y suite (15 modules)
-- Migrate y_branch, y_camp, y_program, etc.
-- Batch process similar modules
-
-### Phase 6: Supporting Modules (2-3 weeks)
-- bootstrap_layout_builder, bootstrap_styles
-- Replace bootstrap-datepicker with modern alternative
-- Other utilities
-
-### Phase 7: Testing & QA (4-6 weeks)
-- Visual regression (BackstopJS)
-- Accessibility (Pa11y, WCAG 2.2 AA)
-- Performance (Lighthouse)
-- Cross-browser testing
-- Manual QA
-
-### Phase 8: Documentation & Rollout (2-3 weeks)
-- Update documentation
-- Staged rollout (internal → beta → production)
-- Communication & support
-
-## Key Decisions Required
-
-### 1. Activity Finder Strategy (MOST CRITICAL)
-**Options:**
-- **A. Isolation + Migration** (RECOMMENDED) - 10-13 weeks, lower risk
-- **B. Direct Migration** - 8-10 weeks, higher risk
-- **C. BootstrapVueNext** - 12-16 weeks, highest risk (alpha software)
-- **D. Keep Bootstrap 4** - 2-3 weeks, permanent technical debt
-
-**Impact:** This decision affects the entire timeline and approach.
-
-### 2. Timeline
-- **Aggressive (3-4 months):** Requires 3-4 developers, parallel work, higher risk
-- **Standard (6-9 months):** Requires 2-3 developers, mixed approach, balanced risk
-- **Gradual (9-12 months):** Requires 1-2 developers, sequential, lowest risk
-
-### 3. Testing Level
-- **Comprehensive:** Visual + Accessibility + Performance + Cross-browser (4-6 weeks)
-- **Standard:** Visual + Accessibility (3-4 weeks)
-- **Basic:** Manual only (2-3 weeks)
-
-## Components Affected
-
-### Bootstrap 4 Usage by Category
-
-**Theme:**
-- openy_carnation (Bootstrap 4.4.1)
-
-**Activity Finders:**
-- Activity Finder 4 (Bootstrap 4.6.1 + BootstrapVue 2.22.0)
-- Activity Finder (BootstrapVue 2.22.0)
-- Camp Finder (BootstrapVue 2.22.0)
-
-**Layout Builder (20 modules):**
-- ✅ lb_accordion (Bootstrap 5.3.3) - ALREADY DONE
-- ❌ 19 others (Bootstrap 4.4.1)
-
-**Website Services (16+ modules):**
-- ws_small_y suite (15 modules)
-- ws_event, ws_promotion, ws_colorway_canada, etc.
-
-**Content Types (10+ modules):**
-- y_branch, y_camp, y_facility, y_program, etc.
-
-**Other:**
-- openy_repeat, openy_node_alert, openy_map, etc.
-
-**Total: ~70 components**
-
-## Breaking Changes Highlights
-
-### Data Attributes (ALL CHANGED)
-```html
-<!-- Bootstrap 4 -->
-<button data-toggle="modal" data-target="#myModal">
-
-<!-- Bootstrap 5 -->
-<button data-bs-toggle="modal" data-bs-target="#myModal">
-```
-
-### Common Class Changes
-- `.btn-block` → `.d-grid` wrapper
-- `.form-group` → `.mb-3`
-- `.custom-select` → `.form-select`
-- `.close` → `.btn-close`
-- `.ml-*` → `.ms-*` (margin-start)
-- `.mr-*` → `.me-*` (margin-end)
-- `.text-left` → `.text-start`
-- `.text-right` → `.text-end`
-
-### JavaScript API
-```javascript
-// Bootstrap 4 (jQuery)
-$('#myModal').modal('show');
-
-// Bootstrap 5 (Vanilla JS)
-const modal = new bootstrap.Modal(document.getElementById('myModal'));
-modal.show();
-```
-
-### Removed Components
-- `.media` component
-- `.jumbotron`
-- `.card-deck`
-- jQuery dependency
-
-## Resources
-
-### Official Bootstrap
-- [Bootstrap 5 Migration Guide](https://getbootstrap.com/docs/5.3/migration/)
-- [Bootstrap 5 Documentation](https://getbootstrap.com/docs/5.3/)
-
-### Testing Tools
-- [BackstopJS](https://github.com/garris/BackstopJS) - Visual regression
-- [Pa11y](https://pa11y.org/) - Accessibility
-- [Lighthouse](https://developers.google.com/web/tools/lighthouse) - Performance
-
-### Migration Tools
-- [Bootstrap 5 Migrate Tool](https://github.com/coliff/bootstrap-5-migrate-tool)
-- [Bootstrap Diff](https://bootstrapdiff.com/)
-
-### Y USA Resources
-- [Y USA Docs](https://sd-docs.y.org)
-- [GitHub Repository](https://github.com/YCloudYUSA/yusaopeny-project)
-
-## Success Metrics
-
-**Technical:**
-- [ ] All ~70 modules migrated to Bootstrap 5.3+
-- [ ] Zero jQuery dependencies (except Drupal core)
-- [ ] Lighthouse scores 90+
-- [ ] Bundle size reduced 15-20%
-- [ ] WCAG 2.2 AA compliance maintained
-- [ ] Zero visual regressions
-
-**Quality:**
-- [ ] 100% templates use Bootstrap 5 syntax
-- [ ] All interactive components functional
-- [ ] Cross-browser compatibility verified
-- [ ] Mobile responsive (including new xxl breakpoint)
-
-**Business:**
-- [ ] Zero site downtime
-- [ ] Positive user feedback
-- [ ] On-time delivery
-- [ ] On-budget delivery
-
-## FAQ
-
-### Q: Can we migrate just part of the site to Bootstrap 5?
-**A:** Yes, temporarily. We recommend the "Isolation" approach for Activity Finder, which allows the theme to use Bootstrap 5 while Activity Finder stays on Bootstrap 4 temporarily. However, maintaining two Bootstrap versions long-term is not recommended.
-
-### Q: How risky is this migration?
-**A:** Medium risk overall. The theme migration is well-understood with low risk. Activity Finder is the highest-risk component due to BootstrapVue incompatibility. Proper testing and staged rollout mitigate risk.
-
-### Q: What's the minimum viable migration?
-**A:** At minimum:
-1. Migrate openy_carnation theme (4-6 weeks)
-2. Isolate Activity Finder with scoped CSS (2-3 weeks)
-3. Basic testing (2 weeks)
-Total: ~8-11 weeks minimum
-
-### Q: Can we skip some modules?
-**A:** Yes! If you're not using certain modules (e.g., ws_small_y, specific lb_* modules), you can skip them. Review the module inventory and identify which are actually in use.
-
-### Q: What if we find bugs after rollout?
-**A:** We recommend a staged rollout (internal → beta → production) to catch issues early. Maintain a rollback plan and provide support during rollout. Most issues should be caught during testing phases.
-
-### Q: How much will this cost?
-**A:** Estimated costs:
-- **Standard (6-9 months, 2-3 devs):** $150K-$250K
-- **Aggressive (3-4 months, 3-4 devs):** $200K-$350K
-- **Gradual (9-12 months, 1-2 devs):** $100K-$180K
-
-## Next Steps
-
-1. ✅ Read [MIGRATION_STRATEGY.md](MIGRATION_STRATEGY.md)
-2. ⬜ Complete [decisions/QUESTIONNAIRE.md](decisions/QUESTIONNAIRE.md)
-3. ⬜ Review with stakeholders
-4. ⬜ Get approval for timeline and resources
-5. ⬜ Begin Phase 1: Preparation
-
-## Questions?
-
-- **GitHub Issues:** https://github.com/YCloudYUSA/yusaopeny-project/issues
-- **GitHub Discussions:** https://github.com/YCloudYUSA/yusaopeny/discussions
-- **Documentation:** https://sd-docs.y.org
+**Project:** Y USA Open YMCA Bootstrap 4 → Bootstrap 5 Migration
+**Total Components:** 66+ modules/themes
+**Timeline:** 9-12 months (24 sprints)
+**Status:** Planning Phase
+**Last Updated:** 2025-10-17
 
 ---
 
-**Last Updated:** 2025-10-08
-**Document Version:** 1.0
-**Status:** Planning Phase
+## 🚀 Quick Start (New Developer?)
+
+**First Time Here? Start with these 3 documents:**
+
+1. **[EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)** - 10-minute overview of entire project
+2. **[QUICK_START.md](QUICK_START.md)** - How to migrate your first module (step-by-step)
+3. **[MODULE_INVENTORY.md](MODULE_INVENTORY.md)** - Complete list of all 66+ modules
+
+**Then, dive into phases and sprints based on where you are in the project.**
+
+---
+
+## 📚 Documentation Structure
+
+This documentation is organized in **3 levels** for easy navigation:
+
+### **Level 1: You Are Here (README.md)**
+Top-level navigation to all sections
+
+### **Level 2: Category Indexes**
+Each category has an INDEX.md with overview and links
+
+### **Level 3: Individual Documents**
+Focused, actionable documents **< 300 lines each**
+
+---
+
+## 📋 Core Documents (Start Here)
+
+| Document | Purpose | Size | Priority |
+|----------|---------|------|----------|
+| [EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md) | Project overview, timeline, resources | ~150 lines | ⭐⭐⭐ CRITICAL |
+| [MODULE_INVENTORY.md](MODULE_INVENTORY.md) | Complete list of 66+ modules to migrate | ~295 lines | ⭐⭐⭐ CRITICAL |
+| [QUICK_START.md](QUICK_START.md) | Developer guide: How to migrate a module | ~210 lines | ⭐⭐ HIGH |
+| [REORGANIZATION_PLAN.md](REORGANIZATION_PLAN.md) | How this documentation is structured | ~290 lines | ⭐ MEDIUM |
+
+---
+
+## 🎯 Migration Phases (Level 2 Index)
+
+**→ [View All Phases](phases/INDEX.md)** *(coming soon)*
+
+### 8 Phases Over 48 Weeks:
+
+| Phase | Weeks | Sprints | Focus | Status |
+|-------|-------|---------|-------|--------|
+| **[Phase 1](phases/PHASE_1_PREPARATION.md)** | 1-6 | 1-3 | Infrastructure, Theme, AF Isolation | ✅ Documented |
+| **[Phase 2](phases/PHASE_2_WEBSITE_SERVICES.md)** | 7-14 | 4-7 | Website Services (~16 modules) | ⬜ To Do |
+| **[Phase 3](phases/PHASE_3_LAYOUT_BUILDER.md)** | 15-26 | 8-13 | Layout Builder (~20 modules) | ⬜ To Do |
+| **[Phase 4](phases/PHASE_4_CONTENT_TYPES.md)** | 27-34 | 14-17 | Content Types (~10 modules) | ⬜ To Do |
+| **[Phase 5](phases/PHASE_5_ACTIVITY_FINDER.md)** | 35-42 | 18-21 | Activity Finder (3 Vue apps) | ⬜ To Do |
+| **[Phase 6](phases/PHASE_6_SUPPORTING.md)** | 43-48 | 22-24 | Testing, Docs, Rollout | ⬜ To Do |
+
+---
+
+## 📅 Sprint Details (Level 2 Index)
+
+**→ [View All Sprints](sprints/INDEX.md)** *(coming soon)*
+
+### 24 Sprints (2 weeks each):
+
+**Phase 1 - Preparation (Sprints 1-3):**
+- [Sprint 1: Infrastructure & Research](sprints/SPRINT_01_Infrastructure.md) ✅ Documented
+- [Sprint 2: Theme Migration Part 1](sprints/SPRINT_02_Theme_Part1.md) ⬜ To Do
+- [Sprint 3: Theme Part 2 + AF Isolation](sprints/SPRINT_03_Theme_Part2_AF_Isolation.md) ⬜ To Do
+
+**Phase 2 - Website Services (Sprints 4-7):**
+- [Sprint 4: WS Small Y Batch 1](sprints/SPRINT_04_WS_SmallY_Batch1.md) ⬜ To Do
+- [Sprint 5: WS Small Y Batch 2](sprints/SPRINT_05_WS_SmallY_Batch2.md) ⬜ To Do
+- [Sprint 6: Other WS Modules](sprints/SPRINT_06_WS_Other_Modules.md) ⬜ To Do
+- [Sprint 7: Testing & Catchup](sprints/SPRINT_07_Testing_Catchup.md) ⬜ To Do
+
+**Phase 3 - Layout Builder (Sprints 8-13):**
+- Sprints 8-13 ⬜ To Do
+
+**Phase 4 - Content Types (Sprints 14-17):**
+- Sprints 14-17 ⬜ To Do
+
+**Phase 5 - Activity Finder (Sprints 18-21):**
+- Sprints 18-21 ⬜ To Do
+
+**Phase 6 - Testing & Rollout (Sprints 22-24):**
+- Sprints 22-24 ⬜ To Do
+
+---
+
+## 📦 Modules by Category (Level 2 Index)
+
+**→ [View All Module Details](modules/INDEX.md)** *(coming soon)*
+
+| Category | Document | Count | Bootstrap Version |
+|----------|----------|-------|-------------------|
+| **Theme** | [MODULES_THEME.md](modules/MODULES_THEME.md) | 1 | 4.4.1 |
+| **Layout Builder** | [MODULES_LAYOUT_BUILDER.md](modules/MODULES_LAYOUT_BUILDER.md) | 20 | 4.4.1 (19), 5.3.3 (1) |
+| **WS Small Y** | [MODULES_WS_SMALL_Y.md](modules/MODULES_WS_SMALL_Y.md) | 16 | 4.4.1 |
+| **Activity Finder** | [MODULES_ACTIVITY_FINDER.md](modules/MODULES_ACTIVITY_FINDER.md) | 3 | 4.6.1 + BootstrapVue 2 |
+| **Content Types** | [MODULES_CONTENT_TYPES.md](modules/MODULES_CONTENT_TYPES.md) | 10 | 4.4.1 |
+| **Other** | [MODULES_OTHER.md](modules/MODULES_OTHER.md) | 16+ | 4.4.1 |
+
+**Total: 66+ modules**
+
+---
+
+## 🔍 Key Decisions (Level 2 Index)
+
+**→ [View All Decisions](decisions/INDEX.md)** *(coming soon)*
+
+| Decision | Document | Status | Priority |
+|----------|----------|--------|----------|
+| **Activity Finder Strategy** | [DECISION_ACTIVITY_FINDER.md](decisions/DECISION_ACTIVITY_FINDER.md) | ⬜ Pending | ⭐⭐⭐ CRITICAL |
+| **Date Picker Replacement** | [DECISION_DATE_PICKER.md](decisions/DECISION_DATE_PICKER.md) | ⬜ Pending (Sprint 1) | ⭐⭐ HIGH |
+| **Testing Strategy** | [DECISION_TESTING_STRATEGY.md](decisions/DECISION_TESTING_STRATEGY.md) | ⬜ To Do | ⭐⭐ HIGH |
+| **Rollout Strategy** | [DECISION_ROLLOUT_STRATEGY.md](decisions/DECISION_ROLLOUT_STRATEGY.md) | ⬜ To Do | ⭐⭐ HIGH |
+| **Questionnaire** | [QUESTIONNAIRE.md](decisions/QUESTIONNAIRE.md) | ✅ Complete | ⭐⭐ HIGH |
+| **Responses** | [QUESTIONNAIRE_RESPONSES.md](decisions/QUESTIONNAIRE_RESPONSES.md) | ✅ Complete | ⭐⭐ HIGH |
+
+---
+
+## 🧪 Testing Documentation (Level 2 Index)
+
+**→ [View All Testing Docs](testing/INDEX.md)** *(coming soon)*
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [TESTING_OVERVIEW.md](testing/TESTING_OVERVIEW.md) | Testing strategy overview | ⬜ To Do |
+| [TESTING_VISUAL_REGRESSION.md](testing/TESTING_VISUAL_REGRESSION.md) | BackstopJS setup & usage | ⬜ To Do |
+| [TESTING_ACCESSIBILITY.md](testing/TESTING_ACCESSIBILITY.md) | Pa11y, WCAG 2.2 AA testing | ⬜ To Do |
+| [TESTING_PERFORMANCE.md](testing/TESTING_PERFORMANCE.md) | Lighthouse, bundle size | ⬜ To Do |
+| [TESTING_MATRIX.xlsx](testing/TESTING_MATRIX.xlsx) | Test tracking spreadsheet | ⬜ To Do |
+
+---
+
+## 📖 Reference Materials (Level 2 Index)
+
+**→ [View All Reference Docs](reference/INDEX.md)** *(coming soon)*
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [BOOTSTRAP_5_CHEATSHEET.md](reference/BOOTSTRAP_5_CHEATSHEET.md) | Quick breaking changes reference | ⬜ To Do |
+| [MIGRATION_CHECKLIST_TEMPLATE.md](reference/MIGRATION_CHECKLIST_TEMPLATE.md) | Reusable module migration checklist | ⬜ To Do (Sprint 1) |
+| [TROUBLESHOOTING.md](reference/TROUBLESHOOTING.md) | Common issues & solutions | ⬜ To Do |
+| [LB_ACCORDION_PATTERNS.md](reference/LB_ACCORDION_PATTERNS.md) | Reference implementation analysis | ⬜ To Do (Sprint 1) |
+
+---
+
+## 🗄️ Archived Documentation
+
+**Large documents (> 300 lines) archived for reference:**
+
+| Document | Lines | Status | Replacement |
+|----------|-------|--------|-------------|
+| [MIGRATION_STRATEGY.md](archive/MIGRATION_STRATEGY.md) | 2,263 | 📦 Archived | Split into phases/ |
+| [SPRINT_PLAN.md](archive/SPRINT_PLAN.md) | 1,479 | 📦 Archived | Split into sprints/ |
+
+**These are kept for reference but should not be primary documentation.**
+
+---
+
+## 🎯 Current Status Summary
+
+### Completed ✅:
+- [x] Comprehensive module inventory (66+ modules found)
+- [x] Executive summary created
+- [x] Quick start guide created
+- [x] Phase 1 documented
+- [x] Sprint 1 documented
+- [x] Documentation reorganization plan created
+
+### In Progress 🚧:
+- [ ] Creating remaining phase documents (Phases 2-6)
+- [ ] Creating remaining sprint documents (Sprints 2-24)
+- [ ] Creating module detail documents
+- [ ] Creating testing documentation
+- [ ] Creating reference materials
+
+### Next Actions 📝:
+1. Review and approve documentation structure
+2. Complete remaining phase documents (7 more)
+3. Complete remaining sprint documents (23 more)
+4. Begin Sprint 1 (actual migration work)
+
+---
+
+## 📊 Migration Progress Tracker
+
+**Overall Progress: 0% (0/66 modules migrated)**
+
+| Category | Progress | Modules Complete | Total |
+|----------|----------|------------------|-------|
+| Theme | 0% | 0 | 1 |
+| Layout Builder | 5% | 1 (lb_accordion) | 20 |
+| WS Small Y | 0% | 0 | 16 |
+| Activity Finder | 0% | 0 | 3 |
+| Content Types | 0% | 0 | 10 |
+| Other | 0% | 0 | 16+ |
+
+---
+
+## 🔗 External Resources
+
+### Official Bootstrap
+- [Bootstrap 5 Documentation](https://getbootstrap.com/docs/5.3/)
+- [Bootstrap 5 Migration Guide](https://getbootstrap.com/docs/5.3/migration/)
+- [Bootstrap 5 Examples](https://getbootstrap.com/docs/5.3/examples/)
+
+### Testing Tools
+- [BackstopJS](https://github.com/garris/BackstopJS) - Visual regression testing
+- [Pa11y](https://pa11y.org/) - Accessibility testing
+- [Lighthouse](https://developers.google.com/web/tools/lighthouse) - Performance testing
+
+### Y USA Resources
+- [Y USA Documentation](https://sd-docs.y.org)
+- [GitHub: yusaopeny-project](https://github.com/YCloudYUSA/yusaopeny-project)
+- [GitHub: yusaopeny (distribution)](https://github.com/YCloudYUSA/yusaopeny)
+
+---
+
+## 💡 Tips for Using This Documentation
+
+### For Project Managers:
+- Start with [EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)
+- Review [phases/](phases/) for high-level planning
+- Track progress using this README's progress tracker
+
+### For Developers:
+- Start with [QUICK_START.md](QUICK_START.md)
+- Pick a module from [MODULE_INVENTORY.md](MODULE_INVENTORY.md)
+- Follow current sprint document in [sprints/](sprints/)
+- Use lb_accordion module as reference
+
+### For QA Engineers:
+- Review [testing/](testing/) documentation
+- Set up BackstopJS and Pa11y in Sprint 1
+- Create baseline tests before migration starts
+
+---
+
+## ❓ FAQ
+
+**Q: Why is documentation split into so many files?**
+**A:** Large documents (2,000+ lines) are hard to navigate and execute. Small documents (< 300 lines) are:
+- Easier to read and understand
+- More actionable (one sprint = one file)
+- Better for version control
+- Easier to assign to team members
+
+**Q: Where do I start?**
+**A:** Three paths:
+1. **Manager:** [EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md) → [phases/](phases/)
+2. **Developer:** [QUICK_START.md](QUICK_START.md) → [sprints/SPRINT_01_Infrastructure.md](sprints/SPRINT_01_Infrastructure.md)
+3. **QA:** [testing/](testing/) → Setup tools in Sprint 1
+
+**Q: What if I need the old comprehensive documents?**
+**A:** See [archive/MIGRATION_STRATEGY.md](archive/MIGRATION_STRATEGY.md) (2,263 lines) and [archive/SPRINT_PLAN.md](archive/SPRINT_PLAN.md) (1,479 lines). But we recommend using the new split structure.
+
+---
+
+## 📞 Questions or Issues?
+
+- **GitHub Issues:** [yusaopeny-project/issues](https://github.com/YCloudYUSA/yusaopeny-project/issues)
+- **GitHub Discussions:** [yusaopeny/discussions](https://github.com/YCloudYUSA/yusaopeny/discussions)
+- **Documentation Site:** [sd-docs.y.org](https://sd-docs.y.org)
+
+---
+
+**Document Version:** 2.0 (Reorganized Structure)
+**Last Updated:** 2025-10-17
+**Status:** ✅ Navigation Hub Active
