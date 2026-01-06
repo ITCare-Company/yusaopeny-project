@@ -1,128 +1,100 @@
 # Drush Site Install Profiling Research
 
 > [!NOTE]
-> This research was conducted on YMCA Website Services 4.0 with Drupal 11.1.9 to identify performance bottlenecks during `drush site:install`.
+> This research compares `drush site:install` performance between Drupal 11.1.9 and Drupal 11.3.1 on YMCA Website Services.
 
 ## Executive Summary
 
-| Metric | Value |
-|--------|-------|
-| Modules Installed | 265 |
-| Total Time | 537 seconds (9 min) |
-| Peak Memory | 4.38 GB |
-| Container Rebuilds | 279 |
+| Metric | Drupal 11.1 | Drupal 11.3 | Improvement |
+|--------|-------------|-------------|-------------|
+| **Total Time** | 537 sec (9 min) | 339 sec (5.6 min) | **37% faster** |
+| **Peak Memory** | 4.38 GB | 955 MB | **78% less** |
+| Container Rebuilds | 282 | 147 | **48% fewer** |
+| Kernel Updates | 279 | 153 | **45% fewer** |
 
 > [!IMPORTANT]
-> **Primary finding**: Upgrading to Drupal 11.2+ will significantly reduce install time and memory usage through batched module installation.
+> **Drupal 11.3's batched module installation delivers massive performance gains with zero code changes required.**
 
 ---
 
-## Profiling Environment
+## Key Metrics Comparison (XHProf Data)
 
-- **Profile**: `openy` with `standard` preset
-- **Drupal Core**: 11.1.9
-- **PHP**: 8.3
-- **Profiler**: XHProf with XHGui
-- **Platform**: DDEV on macOS
+| Metric | Drupal 11.1 | Drupal 11.3 | Improvement |
+|--------|-------------|-------------|-------------|
+| ModuleInstaller::install calls | 265 | 258 | 3% fewer |
+| Kernel updates | 279 | 153 | **45% fewer** |
+| Container rebuilds | 282 | 147 | **48% fewer** |
+| StaticReflectionParser::parse | 69,093 | 36,853 | **47% fewer** |
+| Reflection memory | 13,038 MB | 6,252 MB | **52% less** |
 
 ---
 
-## Memory Growth Analysis
+## Memory Growth Comparison
 
 ```mermaid
-graph LR
-    A[Module 1: 25MB] --> B[Module 50: 65MB]
-    B --> C[Module 100: 123MB]
-    C --> D[Module 150: 776MB]
-    D --> E[Module 200: 1.92GB]
-    E --> F[Module 249: 3.5GB]
+xychart-beta
+    title "Memory Usage During Installation"
+    x-axis [1, 50, 100, 150, 200, 249]
+    y-axis "Memory (MB)" 0 --> 4000
+    bar [25, 65, 123, 776, 1920, 3500]
+    line [28, 58, 92, 219, 514, 829]
 ```
 
-### Memory Growth Rate by Phase
+### Drupal 11.1 Memory Growth
 
-| Phase | Modules | Memory | Growth Rate |
-|-------|---------|--------|-------------|
-| Initial | 1-50 | 25MB → 65MB | ~0.8 MB/module |
-| Early | 50-100 | 65MB → 123MB | ~1.2 MB/module |
-| Mid | 100-150 | 123MB → 776MB | **~13 MB/module** |
-| Late | 150-200 | 776MB → 1.92GB | **~23 MB/module** |
-| Final | 200-249 | 1.92GB → 3.5GB | **~32 MB/module** |
+| Module # | Time | Memory | Growth Rate |
+|----------|------|--------|-------------|
+| 1 | 2.6s | 25 MB | baseline |
+| 50 | 29s | 65 MB | +0.8 MB/module |
+| 100 | 77s | 123 MB | +1.2 MB/module |
+| 150 | 148s | 776 MB | **+13 MB/module** |
+| 200 | 261s | 1.92 GB | **+23 MB/module** |
+| 249 | 426s | 3.5 GB | **+32 MB/module** |
+| **Final** | **537s** | **4.38 GB** | - |
 
-> [!WARNING]
-> Memory growth becomes exponential after ~100 modules due to repeated container rebuilds scanning all previously installed modules.
+### Drupal 11.3 Memory Growth
 
----
+| Module # | Time | Memory | Growth Rate |
+|----------|------|--------|-------------|
+| 1 | 3.7s | 28 MB | baseline |
+| 50 | 8.4s | 58 MB | +0.6 MB/module |
+| 100 | 15s | 92 MB | +0.7 MB/module |
+| 150 | 49s | 219 MB | +2.5 MB/module |
+| 200 | 144s | 514 MB | +5.9 MB/module |
+| 249 | 280s | 829 MB | +6.4 MB/module |
+| **Final** | **339s** | **955 MB** | - |
 
-## Top Memory Consumers
-
-### By Total Memory Allocated
-
-| Function | Calls | Memory |
-|----------|-------|--------|
-| `StaticReflectionParser::parse` | 69,093 | 13,037 MB |
-| `TokenParser::__construct` | 67,807 | 12,419 MB |
-| `Connection::query` | 331,108 | 6,863 MB |
-| `StatementWrapperIterator::execute` | 360,648 | 6,745 MB |
-| `Select::execute` | 277,855 | 5,374 MB |
-| `MenuTreeStorage::safeExecuteSelect` | 245,444 | 4,615 MB |
-
-### By Wall Time
-
-| Function | Calls | Time (sec) |
-|----------|-------|------------|
-| `ModuleInstaller::install` | 249 | 461s |
-| `openy_enable_module` | 120 | 333s |
-| `ModuleInstaller::updateKernel` | 279 | 310s |
-| `InstallerKernel::initializeContainer` | 282 | 308s |
+> [!TIP]
+> Memory growth in 11.3 stays **linear** vs **exponential** in 11.1!
 
 ---
 
-## Root Cause Analysis
+## Why 11.3 Is Faster
 
 <details>
-<summary><strong>Why does memory grow exponentially?</strong></summary>
+<summary><strong>Technical explanation</strong></summary>
 
-### The Problem Chain
-
-```
-265 module installs
-  → 279 kernel updates
-    → 282 container rebuilds
-      → 69,093 StaticReflectionParser::parse calls
-        → 13+ GB memory churn
-```
-
-### Drupal 11.1 Behavior
+### The Problem in Drupal 11.1
 
 In Drupal 11.1, `ModuleInstaller::install()` processes modules **one at a time**:
 
 ```php
-// core/lib/Drupal/Core/Extension/ModuleInstaller.php (11.1)
+// Drupal 11.1 - core/lib/Drupal/Core/Extension/ModuleInstaller.php
 foreach ($module_list as $module) {
-    // ... installs one module
-    // ... rebuilds container EACH TIME
+    // Installs ONE module
+    // Rebuilds container EACH TIME
     $this->updateKernel($module_filenames);
 }
 ```
 
-Each container rebuild triggers:
-1. Full plugin discovery across ALL installed modules
-2. `AttributeClassDiscovery::getDefinitions()` scans every PHP file
-3. `StaticReflectionParser::parse()` called for each class
+**Result**: 265 modules → 279 container rebuilds → 69,093 reflection parser calls
 
-**Result**: Installing module #200 scans 199 previously installed modules.
-
-</details>
-
-<details>
-<summary><strong>What changed in Drupal 11.2+?</strong></summary>
-
-### Batched Module Installation
+### The Solution in Drupal 11.2+
 
 Drupal 11.2 introduced batched installation via [#3416522](https://www.drupal.org/project/drupal/issues/3416522):
 
 ```php
-// core/lib/Drupal/Core/Extension/ModuleInstaller.php (11.2+)
+// Drupal 11.3 - core/lib/Drupal/Core/Extension/ModuleInstaller.php
 $module_groups = [];
 foreach ($module_list as $module) {
     $module_groups[$index][] = $module;
@@ -138,113 +110,87 @@ foreach ($module_groups as $modules) {
 }
 ```
 
-### Expected Improvement
-
-| Metric | Drupal 11.1 | Drupal 11.2+ |
-|--------|-------------|--------------|
-| Container Rebuilds | 265 | ~14 |
-| `StaticReflectionParser` calls | 69,093 | ~5,000 |
-| Expected Time Reduction | - | 60-80% |
+**Result**: 258 modules → 147 container rebuilds → 36,853 reflection parser calls
 
 </details>
+
+---
+
+## Top Memory Consumers
+
+### Drupal 11.1
+
+| Function | Calls | Memory (MB) |
+|----------|-------|-------------|
+| `StaticReflectionParser::parse` | 69,093 | 13,038 |
+| `TokenParser::__construct` | 67,807 | 12,419 |
+| `Connection::query` | 331,108 | 6,864 |
+| `StatementWrapperIterator::execute` | 360,648 | 6,745 |
+| `MenuTreeStorage::safeExecuteSelect` | 245,444 | 4,616 |
+
+### Drupal 11.3
+
+| Function | Calls | Memory (MB) |
+|----------|-------|-------------|
+| `TokenParser::__construct` | 36,853 | 6,641 |
+| `Connection::query` | 303,698 | 6,361 |
+| `StaticReflectionParser::parse` | 36,853 | 6,252 |
+| `StatementWrapperIterator::execute` | 331,987 | 6,234 |
+| `MenuTreeStorage::safeExecuteSelect` | 230,127 | 4,384 |
+
+> [!NOTE]
+> Reflection parser calls dropped by **47%** (69,093 → 36,853)
 
 ---
 
 ## Recommendations
 
-### 1. Upgrade to Drupal 11.2+
+### 1. Upgrade to Drupal 11.2+ (Completed in drupal113 branch)
 
-> [!TIP]
-> This is the **highest impact** optimization - no code changes required.
+- Batched module installation works automatically
+- No code changes required
+- **37% faster install, 78% less memory**
 
-- Batched module installation (20 modules per container rebuild)
-- Expected: ~14 container rebuilds instead of 265
-- Estimated time reduction: 60-80%
+### 2. Consider Tuning Batch Size
 
-### 2. Review `openy_enable_module` Usage
+Add to `settings.php` for different batch sizes:
 
-The function is called 120 times separately during install:
-
-```
-[info] openy_enable_module called 120 times
-[info] Total time: 333 seconds
+```php
+// Default is 20, increase for faster systems with more RAM
+$settings['core.multi_module_install_batch_size'] = 30;
 ```
 
-Consider batching these calls where dependencies allow.
+### 3. Future Investigation
 
-### 3. Investigate MenuTreeStorage Queries
-
-245,444 queries during install:
-
-| Function | Queries |
-|----------|---------|
-| `MenuTreeStorage::safeExecuteSelect` | 245,444 |
-| `MenuTreeStorage::doSave` | 82,943 |
-
-This may indicate opportunities for query batching or caching.
+- `MenuTreeStorage` still generates 230K+ queries
+- `ModuleHandler::invokeAllWith` time increased in 11.3 (investigate hooks)
 
 ---
 
-## Configuration Options (Drupal 11.2+)
+## Profiling Data
 
-### `core.multi_module_install_batch_size`
+Raw logs available in [`docs/profiling-logs/`](profiling-logs/):
 
-Add to `settings.php` to tune batch size:
-
-```php
-$settings['core.multi_module_install_batch_size'] = 20; // default
-```
-
-### `container_rebuild_required`
-
-Modules can declare in `.info.yml`:
-
-```yaml
-container_rebuild_required: true
-```
-
-> [!CAUTION]
-> Only set this if your module decorates services used during the install process itself.
+| File | Description |
+|------|-------------|
+| [`drush_si_profiling_standard_11.1.log`](profiling-logs/drush_si_profiling_standard_11.1.log) | Drupal 11.1.9 install log |
+| [`drush_si_profiling_standard_11_3.log`](profiling-logs/drush_si_profiling_standard_11_3.log) | Drupal 11.3.1 install log |
 
 ---
 
 ## Related Issues
 
-- [#3416522: Add ability to install multiple modules with single container rebuild](https://www.drupal.org/project/drupal/issues/3416522)
-- [#3395260: Performance improvements for AttributeClassDiscovery](https://www.drupal.org/project/drupal/issues/3395260)
-- [#3473563: Change record for container_rebuild_required](https://www.drupal.org/node/3473563)
+- [Drupal #3416522: Add ability to install multiple modules with single container rebuild](https://www.drupal.org/project/drupal/issues/3416522)
+- [Drupal #3395260: Performance improvements for AttributeClassDiscovery](https://www.drupal.org/project/drupal/issues/3395260)
+- [Drupal #3473563: Change record for container_rebuild_required](https://www.drupal.org/node/3473563)
 
 ---
 
-## Appendix: Profiling Data
+## Environment
 
-<details>
-<summary><strong>Full memory growth log</strong></summary>
-
-```
-Module 1:    2.6s,   25 MB
-Module 50:   29s,    65 MB
-Module 100:  77s,   123 MB
-Module 150: 148s,   776 MB
-Module 200: 261s, 1,920 MB
-Module 249: 426s, 3,500 MB
-Module 265: 537s, 4,380 MB (final)
-```
-
-</details>
-
-<details>
-<summary><strong>Call counts for key functions</strong></summary>
-
-| Function | Calls |
-|----------|-------|
-| `Composer\Autoload\ClassLoader::findFile` | 89,717,207 |
-| `Composer\Autoload\ClassLoader::loadClass` | 89,690,445 |
-| `Doctrine\Annotations\TokenParser::next` | 51,708,912 |
-| `Symfony\DI\Definition::hasTag` | 18,940,089 |
-| `StatementWrapperIterator::execute` | 360,648 |
-| `Connection::query` | 331,108 |
-| `Select::execute` | 277,855 |
-| `MenuTreeStorage::safeExecuteSelect` | 245,444 |
-
-</details>
+| Component | Version |
+|-----------|---------|
+| YMCA Website Services | 4.0 |
+| PHP | 8.3 |
+| Profiler | XHProf + XHGui |
+| Platform | DDEV on macOS (M3 Pro) |
